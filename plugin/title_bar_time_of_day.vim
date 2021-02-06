@@ -1,39 +1,35 @@
-" Maintain a clock in the command line window *in MacVim*
+" Maintain a clock in the title bar
 " Author: Landon Bouma <https://tallybark.com/>
-" Online: https://github.com/landonb/vim-ovm-easyescape-kj-jk
+" Online: https://github.com/landonb/vim-title-bar-time-of-day
 " License: https://creativecommons.org/publicdomain/zero/1.0/
 "  vim:tw=0:ts=2:sw=2:et:norl:ft=vim
 " Copyright © 2021 Landon Bouma.
 
 " Age-old answer to Quelle heure est il on a mac with no menu bar.
 
-" MAYBE/2021-02-01: Make which environments in which to operate user-configurable.
+" Note that the titlebar title in MacVim does not update regularly,
+" but only when you are interacting with Vim. So you might want to
+" consider an alternative (or better yet, complementary) plugin to
+" display a clock in the command line window instead (or in addition):
 "
-" - But I'm just making this for myself on a Monday after as a distraction from
-"   real work, and I only need it for @macOS -- where I want to hide the Darwin
-"   menu bar, which contains only 1 item of endless value, the clock! (That is,
-"   I almost drive exclusively with the keyboard, and I really access menu items,
-"   either the application's, the Apple menu, or any of the system tray droppies.)
+"     https://github.com/landonb/vim-command-line-clock
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
 " YOU: Uncomment next 'unlet', then <F9> to reload this file.
 "      (Iff: https://github.com/landonb/vim-source-reloader)
 "
-" silent! unlet g:loaded_plugin_command_line_clock
+" silent! unlet g:loaded_plugin_title_bar_time_of_day
 
-if exists('g:loaded_plugin_command_line_clock') || &cp || v:version < 800
+if exists('g:loaded_plugin_title_bar_time_of_day') || &cp || v:version < 800
     finish
 endif
 
-let g:loaded_plugin_command_line_clock = 1
+let g:loaded_plugin_title_bar_time_of_day = 1
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-" Ref:
-"
-"   :h cmdline-editing for help on command-line mode and command-line window.
-
+" Timer ID, which would never be called except on <F9> plug reload.
 let s:timer = 0
 
 function! s:StopTheClock()
@@ -47,64 +43,72 @@ endfunction
 function! s:StartTheClock()
   call s:StopTheClock()
 
-  " Guard clause: Users opt-out by setting g:CommandLineClockDisabled truthy.
-  if exists('g:CommandLineClockDisabled') && g:CommandLineClockDisabled
+  " Guard clause: Users opt-out by setting g:TitleBarTimeOfDayDisabled truthy.
+  if exists('g:TitleBarTimeOfDayDisabled') && g:TitleBarTimeOfDayDisabled
     return
   endif
 
-  " Guard clause: Restrict by runtime context.
-  " - (lb): I only want this on @macOS, so I can hide the menu bar.
-  "   - I don't care in the other environment I roll, MATE, where I have
-  "     the date and clock in the lower right of my display, just below
-  "     where you'd see a right-aligned value in the command line window.
-  " - MAYBE/2021-02-01: Make platforms on which to run configurable,
-  "   for the benefit of all who might use this plugin.
-  "   - See:
-  "       has('gui_running')
-  "       has('nvim')
-  "       has('win32') || has('win64')
-  "       has('win32unix')
-  if ! has('gui_macvim') | return | endif
 
-  " Timer repeat time, configurable via g:CommandLineClockRepeatTime.
-  " - The timer delay determines longest wait after minute changes to see clock
-  "   updated, and also longest wait after some other message writes to command
-  "   window after which the clock will reappear.
-  if !exists('g:CommandLineClockRepeatTime')
-    let g:CommandLineClockRepeatTime = 1010
+  " Timer repeat time, configurable via g:TitleBarTimeOfDayRepeatTime.
+  " - The timer delay determines the longest length of time after the clock
+  "   time changes that the user might have to wait until the clock updates.
+  if !exists('g:TitleBarTimeOfDayRepeatTime')
+    let g:TitleBarTimeOfDayRepeatTime = 101
   endif
 
-  let s:timer = timer_start(g:CommandLineClockRepeatTime, 'EchoCurrentDateTime', { 'repeat': -1 })
+  let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayPaint', { 'repeat': -1 })
 endfunction
 
-function! EchoCurrentDateTime(timer)
-  " MAYBE/2021-02-01: Make optional: right-alignment and padding from edge.
-  " - Currently, right-aligned with no padding.
-  "     let s:cols = &columns - 1
-  " - Scratch that, right-aligned with 1 character padding.
-  let s:cols = &columns - 2
+function! TitleBarTimeOfDayPaint(timer)
+  let l:clock_day = strftime('%Y-%m-%d')
+  let l:clock_hours = strftime('%H:%M')
+  let l:clock_datetime = printf('%s %s', l:clock_day, l:clock_hours)
 
-  " The %{width}S right-aligns a string in the indicated width.
-  exec "echo printf('%" . s:cols . "S', strftime('%Y-%m-%d %H:%M'))"
+  " +++
 
-" FIXME/2021-02-01: Evaluate clock time in titlebar alternative:
-  " %F is full path, %f is relative to lcd.
-  " %m is modified flag
-  "  exec "set titlestring=filename\\ %m\\ (%f)\\ -\\ " . v:servername . "\\ -\\ " . strftime('%Y-%m-%d\ %H:%M')
-  " Right-aligned, but looks weird, because than filename etc. off-center:
-  "  exec "set titlestring=filename\\ %m\\ (%f)\\ -\\ " . v:servername . "\\ -\\ %=\\ " . strftime('%Y-%m-%d\ %H:%M')
-  " Here it is with clock padded off right a bit...
-  exec "set titlestring=filename\\ %m\\ (%f)\\ -\\ " . v:servername . "\\ -\\ %21.(" . strftime('%Y-%m-%d\ %H:%M') . "%)"
+  " See `:h statusline` for % meanings in the `titlestring`.
+  "
+  " - %F is full path
+  "   %f is path relative to lcd
+  "   %m is modified flag
+  "
+  " - Note that Vim defaults to `titlestring=` which generates a title
+  "   similar to this but not exactly the same:
+  "
+  "       exec "set titlestring=%t\\ %m\\ (%f)\\ -\\ " . v:servername
+  "
+  "   The difference being that the %f is more like an expand('%:~:h'), i.e.,
+  "   the basename of the file, and ~-prefixed rather than absolute, when
+  "   relevant. (And I don't see a %-var to choose such a format.)
 
-  " Maybe I like just relative path including filename, rather than default
-  " 'basename (dirname)' -- with the latter, I always look at the dirname,
-  " then scan back to find the filename.
-  "exec "set titlestring=%f\\ \\ \\ %m\\ \\ \\ {\\ " . v:servername . "\\ }\\ \\ \\ %(" . strftime('%Y-%m-%d\ %H:%M') . "%)"
+  " NOTE: MacVim precedes titlestring with a file icon.
+  " - I hoped to find a way to control it, but so far have not.
+  "   - I tried set noicon, nothing.
+  "   - I tried set guioptions-=i, nothing.
+  "   - I tried set guioptions+=i, hides the command line clock (doesn't matter
+  "     if command line window `echo` before or after).
 
-  " This is nice, but only relative path, leaves me wanting.
-  "  exec "set titlestring={\\ " . v:servername . "\\ }\\ \\ \\ %m\\ \\ \\ «\\ \\ \\ %f\\ \\ \\ »\\ \\ \\ %(" . strftime('%Y-%m-%d\ %H:%M') . "%)"
+  " NOTE: I cannot figure out how to force update the titlebar title.
+  " That is, setting titlestring does not take effect immediately, but
+  " will await the next key press or mouse movement.
+  " - This has an interesting side-effect of letting you know how long
+  "   you've been staring at the screen or playing with your phone, etc.
+  "   By which I mean, how long you've been not Vimming -- if you also
+  "   run vim-command-line-clock, that clock will continue to update,
+  "   but the vim-title-bar-time-of-day clock will be stuck at the last
+  "   time you interacted with Vim. Use that to mark in your dob time
+  "   tracker how long you've been away from work, taking a break. =)
+  " - I tried `set notitle`, `set titlestring=...`, `set title`... hrmpf.
 
-  exec "set titlestring={\\ " . v:servername . "\\ }\\ \\ \\ %m\\ \\ \\ «\\ \\ \\ %F\\ \\ \\ »\\ \\ \\ %(" . strftime('%Y-%m-%d\ %H:%M') . "%)"
+  " Process specially to get space *exactly* right for modified vs. not.
+  " - Note there's sometimes a lag between editing a file and seeing the
+  "   the title bar update.
+  if getbufinfo(bufnr('%'))[0].changed
+    " Modified buffer: show the '+' symbol.
+    exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . l:clock_day . "',\\ '" . l:clock_hours . "')}"
+  else
+    exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . l:clock_day . "',\\ '" . l:clock_hours . "')}"
+  endif
 
 endfunction
 
