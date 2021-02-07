@@ -59,6 +59,8 @@ function! s:StartTheClock()
   let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayPaint', { 'repeat': -1 })
 endfunction
 
+" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+
 function! TitleBarTimeOfDayPaint(timer)
   let l:clock_day = strftime('%Y-%m-%d')
   let l:clock_hours = strftime('%H:%M')
@@ -105,12 +107,103 @@ function! TitleBarTimeOfDayPaint(timer)
   "   the title bar update.
   if getbufinfo(bufnr('%'))[0].changed
     " Modified buffer: show the '+' symbol.
-    exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . l:clock_day . "',\\ '" . l:clock_hours . "')}"
+    call s:PaintTheClock_Modified(l:clock_day, l:clock_hours)
   else
-    exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . l:clock_day . "',\\ '" . l:clock_hours . "')}"
+    " Use a slightly different format for an unmodified buffer to
+    " avoid adding extra whitespace in the title (around the '+').
+    call s:PaintTheClock_Unmodified(l:clock_day, l:clock_hours)
   endif
 
+  " Vim doesn't necessarily update the title bar when titlestring is set.
+  " For instance, Vim will update the title when you change buffers -- e.g.,
+  " you'll see the `%F` and other %-{} options in titlestring update. But
+  " Vim uses the old titlestring value. That is, you won't see the expand()
+  " value used below nor the updated clock time reflected in the title, at
+  " least not until the user moves the cursor, or interacts more with Vim.
+  " (So you could type <Ctrl-W w> to move the cursor to the next window,
+  "  and the titlebar updates the %-{} options, but it won't reflect the
+  "  new titlestring set below -- so you won't see an updated clock time
+  "  until moving the cursor or editing.)
+  redraw
 endfunction
+
+" +++
+
+function! s:PaintTheClock_Modified(clock_day, clock_hours)
+  " On GNOME 2/MATE, the title bar title also appears in gnome-panel or
+  " mate-panel, which is usually also truncated (...), so show the file-
+  " name first, and without leading whitespace, for the cleaneast look.
+  if has("gui_gtk2")
+    call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
+  else
+    call s:PaintTheClock_Modified_Rest(a:clock_day, a:clock_hours)
+  endif
+endfunction
+
+function! s:PaintTheClock_Unmodified(clock_day, clock_hours)
+  if has("gui_gtk2")
+    call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
+  else
+    call s:PaintTheClock_Unmodified_Rest(a:clock_day, a:clock_hours)
+  endif
+endfunction
+
+" +++
+
+function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours)
+  " Rather than use titlestring's/statusline's %F, make path specially to be
+  " more like default titlestring title (which collapses to ~/ when possible).
+  exec "set titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . expand('%:~:h') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+endfunction
+
+function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
+  " Note: Character before the » is ' ' aka U+2000 En Quad Space.
+  " Note: Character before the double quote (") before the expand()
+  "       is ' ' aka U+2006 Six-per-Em Space.
+  " - Both of these spaces make it so none of the title shifts when
+  "   it changes from modified to not, or vice versa! At least in my
+  "   Mint MATE 19.3 window manager environment, it looks perfect!
+  exec "set titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . expand('%:~:h') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+endfunction
+
+" +++
+
+function! s:PaintTheClock_Modified_Rest(clock_day, clock_hours)
+  exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+endfunction
+
+function! s:PaintTheClock_Unmodified_Rest(clock_day, clock_hours)
+  exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+endfunction
+
+" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+
+function! s:CreateEventHandlers()
+  " Note that local l:not_timer won't work during autocmd callback.
+  let s:not_timer = -1
+  augroup title_bar_time_of_day_autocommands
+    autocmd!
+    " To ensure there's no delay between switching buffers and the new
+    " buffer's filename appearing in the title, don't wait for the timer
+    " to fire, but update the title immediately,
+    autocmd BufEnter * call TitleBarTimeOfDayPaint(s:not_timer)
+    " Similar to changing buffers, also ensure the '+' modified symbol
+    " appears as soon as the user edits a buffer.
+    " - Normal mode edits.
+    autocmd TextChanged * call TitleBarTimeOfDayPaint(s:not_timer)
+    " - Insert mode edits, sans popup.
+    autocmd TextChangedI * call TitleBarTimeOfDayPaint(s:not_timer)
+    " - Like TextChangeI but only when the popup menu is visible.
+    autocmd TextChangedP * call TitleBarTimeOfDayPaint(s:not_timer)
+    " Just testing this Easter Event I found, out of curiosity.
+    " - Oh, haha, it's not implemented, the docs totally tricked me!
+    "  autocmd UserGettingBored * echom 'No egg to see here'
+  augroup END
+endfunction
+
+" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+
+call s:CreateEventHandlers()
 
 call s:StartTheClock()
 
