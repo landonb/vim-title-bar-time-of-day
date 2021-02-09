@@ -139,23 +139,34 @@ endfunction
 
 " +++
 
+" MAYBE/2021-02-09: I decided that I like the gtk2 style on macOS, too,
+" so I disabled the macOS variants, but maybe make this style optional.
+" (The PaintTheClock_Modified_Rest/PaintTheClock_Unmodified_Rest fcns.)
+
 function! s:PaintTheClock_Modified(clock_day, clock_hours)
   " On GNOME 2/MATE, the title bar title also appears in gnome-panel or
   " mate-panel, which is usually also truncated (...), so show the file-
   " name first, and without leading whitespace, for the cleaneast look.
-  if has("gui_gtk2")
-    call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
-  else
-    call s:PaintTheClock_Modified_Rest(a:clock_day, a:clock_hours)
-  endif
+  "
+  "  if has("gui_gtk2")
+  "    call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
+  "  else
+  "    call s:PaintTheClock_Modified_Rest(a:clock_day, a:clock_hours)
+  "  endif
+  "
+  " On second thought, having the filename first looks good on macOS, too.
+  call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
 endfunction
 
 function! s:PaintTheClock_Unmodified(clock_day, clock_hours)
-  if has("gui_gtk2")
-    call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
-  else
-    call s:PaintTheClock_Unmodified_Rest(a:clock_day, a:clock_hours)
-  endif
+  "  if has("gui_gtk2")
+  "    call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
+  "  else
+  "    call s:PaintTheClock_Unmodified_Rest(a:clock_day, a:clock_hours)
+  "  endif
+  "
+  " On second thought, having the filename first looks good on macOS, too.
+  call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
 endfunction
 
 " +++
