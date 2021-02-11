@@ -264,6 +264,9 @@ function! s:CreateEventHandlers()
     autocmd!
     " Changing buffers affects filename, path, and modified.
     autocmd BufEnter * call TitleBarTimeOfDayPaint(s:_call_redraw)
+    " Reacting to file-saved seems necessary, but empirical evidence
+    " suggests this is not necessary. So not necessary, but complete!
+    autocmd BufWritePost * call TitleBarTimeOfDayPaint(s:_call_redraw)
     " Editing the buffer might change the '+' modified symbol.
     " - Normal mode edits.
     autocmd TextChanged * call TitleBarTimeOfDayPaint(s:_call_redraw)
