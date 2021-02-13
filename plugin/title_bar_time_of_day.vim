@@ -191,7 +191,7 @@ endfunction
 function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours)
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
-  exec "set titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . expand('%:~:h') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
@@ -201,7 +201,7 @@ function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
   " - Both of these spaces make it so none of the title shifts when
   "   it changes from modified to not, or vice versa! At least in my
   "   Mint MATE 19.3 window manager environment, it looks perfect!
-  exec "set titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . expand('%:~:h') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++
