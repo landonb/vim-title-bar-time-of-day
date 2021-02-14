@@ -21,8 +21,9 @@
 "
 " silent! unlet g:loaded_plugin_title_bar_time_of_day
 
+" Note: Requiring Vim 8+ because timers.
 if exists('g:loaded_plugin_title_bar_time_of_day') || &cp || v:version < 800
-    finish
+  finish
 endif
 
 let g:loaded_plugin_title_bar_time_of_day = 1
