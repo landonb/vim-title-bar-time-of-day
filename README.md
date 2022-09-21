@@ -19,6 +19,13 @@ This plug-in requires Vim v8.0 or greater, to take advantage of timers.
 
 Nothing. If this plugin is loaded, it'll show a clock in the titlebar.
 
+For example, here's the titlebar of Vim running on Linux Mint MATE.
+You'll see the clock printed on the right. To the left of the clock
+are three other details: First, the filename; next, the file path;
+and third, the ``--servername``:
+
+![vim-title-bar-time-of-day example](doc/assets/vim-title-bar-time-of-day-MATE-desktop.png "vim-title-bar-time-of-day example")
+
 ## Options
 
 To set an option, include a line like the following in your `~/.vimrc`:
