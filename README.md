@@ -1,4 +1,4 @@
-# vim-command-line-clock
+# vim-title-bar-time-of-day
 
 An answer to the age-old question after hiding the macOS menu bar,
 
@@ -6,9 +6,10 @@ An answer to the age-old question after hiding the macOS menu bar,
 
 ## Introduction
 
-In MacVim, this plugin maintains a clock in the command window.
+This plugin shows the date and time of day in the Vim titlebar.
 
-*(WIP: I'm also demoing a clock in the titlebar. This plugin is new and these first few commits are very much works-in-progress. -2021-02-01)*
+The author finds this useful on macOS, because I like to hide the
+macOS menu bar, which is normally where you'd see the clock.
 
 ### Requirements
 
@@ -16,25 +17,30 @@ This plug-in requires Vim v8.0 or greater, to take advantage of timers.
 
 ## Usage
 
-Nothing. If this plugin is loaded, it'll show a clock in MacVim.
+Nothing. If this plugin is loaded, it'll show a clock in the titlebar.
 
 ## Options
 
 To set an option, include a line like the following in your `~/.vimrc`:
 
   ```
-  let g:CommandLineClockDisabled = 1
+  let g:TitleBarTimeOfDayDisabled = 1
   ```
 
 The following options are available:
 
-- `g:CommandLineClockDisabled` — Boolean value; either 0 or 1 (default: 0)
+- `g:TitleBarTimeOfDayDisabled` — Boolean value; either 0 or 1 (default: 0)
 
   Set this variable truthy to disable the plugin.
 
-- `g:CommandLineClockRepeatTime` — Non-negative integer value (default: 1010).
+- `g:TitleBarTimeOfDayRepeatTime` — Non-negative integer value (default: 101).
 
   Determines how often to run the timer that updates the clock (in milliseconds).
+
+## See Also
+
+If you'd like to show a clock in the Vim command window, see a similar plugin:
+[vim-command-line-clock](https://www.github.com/landonb/vim-command-line-clock)
 
 ## Installation
 
@@ -51,7 +57,7 @@ And then clone the project to that path:
 
   ```shell
   cd ~/.vim/pack/landonb/start
-  git clone https://github.com/landonb/vim-command-line-clock.git
+  git clone https://github.com/landonb/vim-title-bar-time-of-day.git
   ```
 
 If you want to test the package first, make it optional instead
@@ -60,10 +66,10 @@ If you want to test the package first, make it optional instead
   ```shell
   mkdir -p ~/.vim/pack/landonb/opt
   cd ~/.vim/pack/landonb/opt
-  git clone https://github.com/landonb/vim-command-line-clock.git
+  git clone https://github.com/landonb/vim-title-bar-time-of-day.git
 
   " When ready, load the [opt]ional plugin (or is it [opt]-in?).
-  :packadd! vim-command-line-clock
+  :packadd! vim-title-bar-time-of-day
   ```
 
 To build the help, ensure the plugin is loaded, and then
@@ -76,13 +82,13 @@ run the following command just one time from within Vim:
 Or, you can build the help from the terminal instead. Run:
 
   ```shell
-  vim -u NONE -c "helptags vim-command-line-clock/doc" -c q
+  vim -u NONE -c "helptags vim-title-bar-time-of-day/doc" -c q
   ```
 
 And then to view the help from within Vim, run:
 
   ```shell
-  :help vim-command-line-clock
+  :help vim-title-bar-time-of-day
   ```
 
 Enjoy!
