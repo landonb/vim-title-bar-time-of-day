@@ -16,13 +16,16 @@
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-" YOU: Uncomment next 'unlet', then <F9> to reload this file.
-"      (Iff: https://github.com/landonb/vim-source-reloader)
-"
-" silent! unlet g:loaded_plugin_title_bar_time_of_day
+" GUARD: Press <F9> to reload this plugin (or :source it).
+" - Via: https://github.com/embrace-vim/vim-source-reloader#↩️
+
+if expand('%:p') ==# expand('<sfile>:p')
+  unlet g:loaded_plugin_title_bar_time_of_day
+endif
 
 " Note: Requiring Vim 8+ because timers.
 if exists('g:loaded_plugin_title_bar_time_of_day') || &cp || v:version < 800
+
   finish
 endif
 
