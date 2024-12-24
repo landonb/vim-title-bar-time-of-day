@@ -20,7 +20,7 @@
 " - Via: https://github.com/embrace-vim/vim-source-reloader#↩️
 
 if expand('%:p') ==# expand('<sfile>:p')
-  unlet g:loaded_plugin_title_bar_time_of_day
+  unlet! g:loaded_plugin_title_bar_time_of_day
 endif
 
 " Note: Requiring Vim 8+ because timers.
