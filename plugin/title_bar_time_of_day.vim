@@ -14,7 +14,7 @@
 "
 "     https://github.com/landonb/vim-command-line-clock
 
-" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+" -------------------------------------------------------------------
 
 " GUARD: Press <F9> to reload this plugin (or :source it).
 " - Via: https://github.com/embrace-vim/vim-source-reloader#↩️
@@ -23,7 +23,7 @@ if expand('%:p') ==# expand('<sfile>:p')
   unlet! g:loaded_plugin_title_bar_time_of_day
 endif
 
-" Note: Requiring Vim 8+ because timers.
+" SAVVY: Requires Vim 8+ because timers.
 if exists('g:loaded_plugin_title_bar_time_of_day') || &cp || v:version < 800
 
   finish
@@ -31,7 +31,7 @@ endif
 
 let g:loaded_plugin_title_bar_time_of_day = 1
 
-" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+" -------------------------------------------------------------------
 
 " Timer ID, which would never be called except on <F9> plug reload.
 let s:timer = 0
@@ -289,6 +289,4 @@ endfunction
 call s:CreateEventHandlers()
 
 call s:StartTheClock()
-
-" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
