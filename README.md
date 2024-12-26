@@ -47,7 +47,7 @@ The following options are available:
 ## See Also
 
 If you'd like to show a clock in the Vim command window, see a similar plugin:
-[vim-command-line-clock](https://www.github.com/landonb/vim-command-line-clock)
+[vim-command-line-clock](https://www.github.com/embrace-vim/vim-command-line-clock)
 
 ## Installation
 

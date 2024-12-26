@@ -12,7 +12,7 @@
 " consider an alternative (or better yet, complementary) plugin to
 " display a clock in the command line window instead (or in addition):
 "
-"     https://github.com/landonb/vim-command-line-clock
+"     https://github.com/embrace-vim/vim-command-line-clock
 
 " -------------------------------------------------------------------
 
