@@ -52,6 +52,12 @@ function! s:StartTheClock()
     return
   endif
 
+  " Implicit enable in Vim on `set titlestring=`, but must be explicitly
+  " enabled in Neovim.
+  " - Can also be set inline with titlestring; see below.
+  "
+  "  set title
+
   " Timer repeat time, configurable via g:TitleBarTimeOfDayRepeatTime.
   " - The timer delay determines the longest length of time after the clock
   "   time changes that the user might have to wait until the clock updates.
@@ -195,7 +201,7 @@ endfunction
 function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours)
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
-  exec "set titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
@@ -205,7 +211,7 @@ function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
   " - Both of these spaces make it so none of the title shifts when
   "   it changes from modified to not, or vice versa! At least in my
   "   Mint MATE 19.3 window manager environment, it looks perfect!
-  exec "set titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++
@@ -218,11 +224,11 @@ endfunction
 "     not matter if command line window `echo` before or after).
 
 function! s:PaintTheClock_Modified_Rest(clock_day, clock_hours)
-  exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 function! s:PaintTheClock_Unmodified_Rest(clock_day, clock_hours)
-  exec "set titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
