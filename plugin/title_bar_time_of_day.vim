@@ -1,6 +1,6 @@
 " Maintain a clock in the title bar
 " Author: Landon Bouma <https://tallybark.com/>
-" Online: https://github.com/landonb/vim-title-bar-time-of-day
+" Online: https://github.com/landonb/vim-title-bar-time-of-day#🕰️
 " License: https://creativecommons.org/publicdomain/zero/1.0/
 "  vim:tw=0:ts=2:sw=2:et:norl:ft=vim
 " Copyright © 2021 Landon Bouma.
