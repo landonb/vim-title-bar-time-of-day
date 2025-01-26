@@ -66,6 +66,8 @@ function! s:StartTheClock()
     let g:TitleBarTimeOfDayRepeatTime = 101
   endif
 
+  call s:CaptureServernamePostfix()
+
   let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
 endfunction
 
@@ -73,6 +75,54 @@ function! TitleBarTimeOfDayTimer(timer)
   let l:call_redraw = 1
 
   call TitleBarTimeOfDayPaint(l:call_redraw)
+endfunction
+
+" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+
+" The Vim servername, or part of the Neovim socket name, is included
+" in the Vim titlebar title and can be used to find and front a
+" Vim/Neovim TUI or GUI window.
+
+" CXREF: If the nvim server was started by author's open shim,
+"        the substitute below removes the uninteresting path
+"        prefix used by the shim.
+"        - See:
+"          https://github.com/DepoXy/gvim-open-kindness#🐬
+" - That project lets you open files in the same Vim, GVim, MacVim,
+"   Neovim, Neovide, etc., instance, from callers in different domains,
+"   e.g., the user calling from the command line, or an OS accelerator
+"   calling from Hammerspoon (or Karabiner Elements, or skhd, or GNOME
+"   Shell Keyboard Shortcuts), or a tig-newtons tig command, or the
+"   `mropen` myrepos command, etc.
+" - The user can customize the socket name using an environ named
+"   NVIM_OPEN_SOCKETNAME. The value is used to suffix the socket name,
+"   which is created under /tmp using the common prefix, "nvim.socket-".
+"   - For example, using
+"       NVIM_OPEN_SOCKETNAME="💚"
+"     will create the socket:
+"       /tmp/nvim.socket-💚
+"   - And here we ensure the prefix isn't printed to the titlebar.
+"
+" CXREF: On macOS, the gvim-open-kindness script also uses the
+"        URISetFrontmost Spoon from Hammyspoony:
+"      https://github.com/DepoXy/macOS-Hammyspoony#🥄
+"   https://github.com/DepoXy/macOS-Hammyspoony/blob/release/Source/URISetFrontmost.spoon/init.lua
+" Which effectively calls:
+"   hs.window.find(<s:servername>):raise:focus()
+" To bring the nvim TUI window to the front.
+" - Note that both gvim-open-kindness and URISetFrontmost rely on
+"   this or a similar plugin printing the socket name postfix
+"   to the Vim title for all this "magic" to shine.
+" - The gvim-open-kindness script also works on Wayland, albeit
+"   requiring a third-party GNOME Extension to find the window.
+
+function! s:CaptureServernamePostfix() abort
+  let s:servername = v:servername
+
+  if has('nvim')
+    let l:sock_fmt = get(g:, 'TitleBarTimeOfDayServernameFormat', '^/tmp/nvim.socket-')
+    let s:servername = substitute(v:servername, l:sock_fmt, '', '')
+  endif
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
@@ -191,7 +241,7 @@ endfunction
 " - Note that Vim defaults to `titlestring=` which generates a title
 "   similar to this but not exactly the same:
 "
-"       exec "set titlestring=%t\\ %m\\ (%f)\\ -\\ " . v:servername
+"       exec "set titlestring=%t\\ %m\\ (%f)\\ -\\ " . s:servername
 "
 "   The difference being that the %f is more like an expand('%:~:h'), i.e.,
 "   the basename of the file, and ~-prefixed rather than absolute, when
@@ -202,7 +252,7 @@ endfunction
 function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours)
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
-  exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
@@ -212,7 +262,7 @@ function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
   " - Both of these spaces make it so none of the title shifts when
   "   it changes from modified to not, or vice versa! At least in my
   "   Mint MATE 19.3 window manager environment, it looks perfect!
-  exec "set title titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . tolower(v:servername) . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++
@@ -225,11 +275,11 @@ endfunction
 "     not matter if command line window `echo` before or after).
 
 function! s:PaintTheClock_Modified_Rest(clock_day, clock_hours)
-  exec "set title titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 function! s:PaintTheClock_Unmodified_Rest(clock_day, clock_hours)
-  exec "set title titlestring=\\ \\ \\ " . tolower(v:servername) . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
