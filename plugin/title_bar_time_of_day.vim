@@ -49,6 +49,7 @@ function! s:StartTheClock()
 
   " Guard clause: Users opt-out by setting g:TitleBarTimeOfDayDisabled truthy.
   if exists('g:TitleBarTimeOfDayDisabled') && g:TitleBarTimeOfDayDisabled
+
     return
   endif
 
