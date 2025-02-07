@@ -42,6 +42,8 @@ function! g:embrace#titlebar#StartTheClock() abort
     let g:TitleBarTimeOfDayRepeatTime = 3123
   endif
 
+  call s:TitleBarTimeOfDayTaint()
+
   call s:CaptureServernamePostfix()
 
   let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
@@ -131,21 +133,20 @@ endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-let s:previous_clock_datetime = ''
+function! s:TitleBarTimeOfDayTaint() abort
+  let s:previous_clock_datetime = ''
+  let s:previous_modified = -1
+endfunction
 
 function! TitleBarTimeOfDayPaint(call_redraw) abort
-  let l:clock_day = strftime('%Y-%m-%d')
-  let l:clock_hours = strftime('%H:%M')
-  let l:clock_datetime = printf('%s %s', l:clock_day, l:clock_hours)
-
-  " +++
+  let s:clock_datetime = strftime('%Y-%m-%d %H:%M')
 
   " Not that I saw a problem with setting titlestring frequently, but there's
   " no reason to continue if the clock has not changed nor anything of import.
   " - Note that call_redraw = 1 means the timer called us, in which case only
   "   maybe the clock changed; but when call_redraw = 0, it means BufEnter or
   "   TextChanged*, and we should always update titlestring.
-  if (a:call_redraw == 1) && (l:clock_datetime == s:previous_clock_datetime)
+  if (a:call_redraw == 1) && (s:clock_datetime == s:previous_clock_datetime)
 
     return
   endif
@@ -159,19 +160,23 @@ function! TitleBarTimeOfDayPaint(call_redraw) abort
   " around slightly when the buffer modified status changes.
   if getbufinfo(bufnr('%'))[0].changed
     " Modified buffer: show the '+' symbol.
-    call s:PaintTheClock_Modified(l:clock_day, l:clock_hours)
+    if s:previous_modified != 1
+      call s:PaintTheClock_Modified()
+    endif
+    let s:previous_modified = 1
   else
     " Use a slightly different format for an unmodified buffer to avoid
     " adding extra whitespace in the title (around the '+'), and to
     " better align the parts title so there's as little a noticeable
     " change as possible it the title when you start editing.
-    call s:PaintTheClock_Unmodified(l:clock_day, l:clock_hours)
+    if s:previous_modified != 0
+      call s:PaintTheClock_Unmodified()
+    endif
+    let s:previous_modified = 0
   endif
 
-  let l:redrawed = s:ForceTitleBarTitleRedraw(a:call_redraw)
-
-  if l:redrawed || (a:call_redraw == 0)
-    let s:previous_clock_datetime = l:clock_datetime
+  if s:ForceTitleBarTitleRedraw()
+    let s:previous_clock_datetime = s:clock_datetime
   endif
 endfunction
 
@@ -181,7 +186,7 @@ endfunction
 " so I disabled the macOS variants, but maybe make this style optional.
 " (The PaintTheClock_Modified_Rest/PaintTheClock_Unmodified_Rest fcns.)
 
-function! s:PaintTheClock_Modified(clock_day, clock_hours) abort
+function! s:PaintTheClock_Modified() abort
   " On GNOME 2/MATE, the title bar title also appears in gnome-panel or
   " mate-panel, which is usually also truncated (...), so show the file-
   " name first, and without leading whitespace, for the cleaneast look.
@@ -193,10 +198,10 @@ function! s:PaintTheClock_Modified(clock_day, clock_hours) abort
   "  endif
   "
   " On second thought, having the filename first looks good on macOS, too.
-  call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
+  call s:PaintTheClock_Modified_gtk2()
 endfunction
 
-function! s:PaintTheClock_Unmodified(clock_day, clock_hours) abort
+function! s:PaintTheClock_Unmodified() abort
   "  if has("gui_gtk2")
   "    call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
   "  else
@@ -204,7 +209,7 @@ function! s:PaintTheClock_Unmodified(clock_day, clock_hours) abort
   "  endif
   "
   " On second thought, having the filename first looks good on macOS, too.
-  call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
+  call s:PaintTheClock_Unmodified_gtk2()
 endfunction
 
 " +++
@@ -226,20 +231,30 @@ endfunction
 "   hard code that path in titlestring, which is another reason we need to
 "   manage `redraw` specially, as commented above.)
 
-function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours) abort
+function! s:PaintTheClock_Modified_gtk2() abort
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
-  exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
 endfunction
 
-function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours) abort
+function! s:PaintTheClock_Unmodified_gtk2() abort
   " Note: Character before the » is ' ' aka U+2000 En Quad Space.
   " Note: Character before the double quote (") before the expand()
   "       is ' ' aka U+2006 Six-per-Em Space.
   " - Both of these spaces make it so none of the title shifts when
   "   it changes from modified to not, or vice versa! At least in my
   "   Mint MATE 19.3 window manager environment, it looks perfect!
-  exec "set title titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
+  exec "set title titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
+endfunction
+
+" +++
+
+function! g:embrace#titlebar#TildePrefixedPath() abort
+  return substitute(expand('%:~:h'), ' ', '\\ ', 'g')
+endfunction
+
+function! g:embrace#titlebar#DateAndTimeString() abort
+  return s:clock_datetime
 endfunction
 
 " +++
@@ -261,7 +276,7 @@ endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-function! s:ForceTitleBarTitleRedraw(call_redraw) abort
+function! s:ForceTitleBarTitleRedraw() abort
   " Don't redraw in certain modes. E.g., if you run `:messages`, which
   " is 'r' mode, `redraw` will dismiss the output. Note that when
   " :messages is open, the title bar will still eventually update,
@@ -277,13 +292,9 @@ function! s:ForceTitleBarTitleRedraw(call_redraw) abort
     return 0
   endif
 
-  if (a:call_redraw == 1)
-    redraw
+  redraw
 
-    return 1
-  endif
-
-  return 0
+  return 1
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
