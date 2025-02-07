@@ -170,6 +170,7 @@ function! TitleBarTimeOfDayPaint(call_redraw)
   "   maybe the clock changed; but when call_redraw = 0, it means BufEnter or
   "   TextChanged*, and we should always update titlestring.
   if (a:call_redraw == 1) && (l:clock_datetime == s:previous_clock_datetime)
+
     return
   endif
 
@@ -295,10 +296,14 @@ function! s:ForceTitleBarTitleRedraw(call_redraw)
   " autocommands, and I've seen Vim not update the title bar at all
   " until the user interacts with Vim. In any case, be picky about
   " modes we'll redraw from.
-  if mode() !=# 'n' && mode() !=# 'i' && mode() !=# 's' | return 0 | endif
+  if mode() !=# 'n' && mode() !=# 'i' && mode() !=# 's'
+
+    return 0
+  endif
 
   if (a:call_redraw == 1)
     redraw
+
     return 1
   endif
 
