@@ -98,8 +98,19 @@ function! s:CaptureServernamePostfix() abort
   let s:servername = v:servername
 
   if has('nvim')
+    " - REFER: https://github.com/DepoXy/gvim-open-kindness#🐬
+    "   - `gvim-open-kindness` looks for the server name in window titles
+    "     to find and front the editor instance.
     let l:sock_fmt = get(g:, 'TitleBarTimeOfDayServernameFormat', '^/tmp/nvim.socket-')
     let s:servername = substitute(v:servername, l:sock_fmt, '', '')
+  endif
+
+  " If servername wasn't in gvim-open-kindness format (/tmp/nvim.socket-*)
+  " if might be a long path, e.g.,
+  "   /var/folders/4r/vs_plqd91h9dclfh5c020cdh0000gn/T/nvim.user/XKp10a/nvim.6590.0
+  if s:servername == v:servername
+    let s:servername = fnamemodify(v:servername, ":t")
+    let s:servername = substitute(s:servername, '[0-9.]\+$', '', '')
   endif
 endfunction
 
