@@ -7,7 +7,7 @@
 
 " -------------------------------------------------------------------
 
-function! s:StopTheClock() abort
+function! g:embrace#titlebar#StopTheClock() abort
   if ! exists('s:timer') || ! s:timer
 
     return
@@ -21,7 +21,7 @@ function! s:StopTheClock() abort
 endfunction
 
 function! g:embrace#titlebar#StartTheClock() abort
-  call s:StopTheClock()
+  call g:embrace#titlebar#StopTheClock()
 
   " Guard clause: Users opt-out by setting g:TitleBarTimeOfDayDisabled truthy.
   if exists('g:TitleBarTimeOfDayDisabled') && g:TitleBarTimeOfDayDisabled
