@@ -10,7 +10,7 @@
 " Timer ID, which would never be called except on <F9> plug reload.
 let s:timer = 0
 
-function! s:StopTheClock()
+function! s:StopTheClock() abort
   if ! exists('s:timer') || ! s:timer | return | endif
 
   echom "Stopping timer: " . s:timer
@@ -18,7 +18,7 @@ function! s:StopTheClock()
   let s:timer = 0
 endfunction
 
-function! g:embrace#titlebar#StartTheClock()
+function! g:embrace#titlebar#StartTheClock() abort
   call s:StopTheClock()
 
   " Guard clause: Users opt-out by setting g:TitleBarTimeOfDayDisabled truthy.
@@ -45,7 +45,7 @@ function! g:embrace#titlebar#StartTheClock()
   let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
 endfunction
 
-function! TitleBarTimeOfDayTimer(timer)
+function! TitleBarTimeOfDayTimer(timer) abort
   let l:call_redraw = 1
 
   call TitleBarTimeOfDayPaint(l:call_redraw)
@@ -131,7 +131,7 @@ endfunction
 
 let s:previous_clock_datetime = ''
 
-function! TitleBarTimeOfDayPaint(call_redraw)
+function! TitleBarTimeOfDayPaint(call_redraw) abort
   let l:clock_day = strftime('%Y-%m-%d')
   let l:clock_hours = strftime('%H:%M')
   let l:clock_datetime = printf('%s %s', l:clock_day, l:clock_hours)
@@ -179,7 +179,7 @@ endfunction
 " so I disabled the macOS variants, but maybe make this style optional.
 " (The PaintTheClock_Modified_Rest/PaintTheClock_Unmodified_Rest fcns.)
 
-function! s:PaintTheClock_Modified(clock_day, clock_hours)
+function! s:PaintTheClock_Modified(clock_day, clock_hours) abort
   " On GNOME 2/MATE, the title bar title also appears in gnome-panel or
   " mate-panel, which is usually also truncated (...), so show the file-
   " name first, and without leading whitespace, for the cleaneast look.
@@ -194,7 +194,7 @@ function! s:PaintTheClock_Modified(clock_day, clock_hours)
   call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
 endfunction
 
-function! s:PaintTheClock_Unmodified(clock_day, clock_hours)
+function! s:PaintTheClock_Unmodified(clock_day, clock_hours) abort
   "  if has("gui_gtk2")
   "    call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
   "  else
@@ -224,13 +224,13 @@ endfunction
 "   hard code that path in titlestring, which is another reason we need to
 "   manage `redraw` specially, as commented above.)
 
-function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours)
+function! s:PaintTheClock_Modified_gtk2(clock_day, clock_hours) abort
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
   exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ " . substitute(expand('%:~:h'), ' ', '\\ ', 'g') . "\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
-function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours)
+function! s:PaintTheClock_Unmodified_gtk2(clock_day, clock_hours) abort
   " Note: Character before the » is ' ' aka U+2000 En Quad Space.
   " Note: Character before the double quote (") before the expand()
   "       is ' ' aka U+2006 Six-per-Em Space.
@@ -249,17 +249,17 @@ endfunction
 "   - I tried set guioptions+=i, hides the command line clock (does
 "     not matter if command line window `echo` before or after).
 
-function! s:PaintTheClock_Modified_Rest(clock_day, clock_hours)
+function! s:PaintTheClock_Modified_Rest(clock_day, clock_hours) abort
   exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
-function! s:PaintTheClock_Unmodified_Rest(clock_day, clock_hours)
+function! s:PaintTheClock_Unmodified_Rest(clock_day, clock_hours) abort
   exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-function! s:ForceTitleBarTitleRedraw(call_redraw)
+function! s:ForceTitleBarTitleRedraw(call_redraw) abort
   " Don't redraw in certain modes. E.g., if you run `:messages`, which
   " is 'r' mode, `redraw` will dismiss the output. Note that when
   " :messages is open, the title bar will still eventually update,
@@ -286,7 +286,7 @@ endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-function! g:embrace#titlebar#CreateEventHandlers()
+function! g:embrace#titlebar#CreateEventHandlers() abort
   " Vim doesn't update the title bar title when titlestring is set, but
   " waits until the next redraw (lb: I have not checked sources, so my
   " explanation here may not be 100% accurate). We could call `redraw`
