@@ -18,7 +18,7 @@ function! s:StopTheClock()
   let s:timer = 0
 endfunction
 
-function! s:StartTheClock()
+function! g:embrace#titlebar#StartTheClock()
   call s:StopTheClock()
 
   " Guard clause: Users opt-out by setting g:TitleBarTimeOfDayDisabled truthy.
@@ -286,7 +286,7 @@ endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-function! s:CreateEventHandlers()
+function! g:embrace#titlebar#CreateEventHandlers()
   " Vim doesn't update the title bar title when titlestring is set, but
   " waits until the next redraw (lb: I have not checked sources, so my
   " explanation here may not be 100% accurate). We could call `redraw`
