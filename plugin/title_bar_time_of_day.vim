@@ -289,7 +289,7 @@ function! s:ForceTitleBarTitleRedraw(call_redraw)
   " is 'r' mode, `redraw` will dismiss the output. Note that when
   " :messages is open, the title bar will still eventually update,
   " even if we're not calling `redraw` here. (lb): I tested and ran
-  " `:messages` and left it's prompt unanswered, and it took ~10 secs.
+  " `:messages` and left its prompt unanswered, and it took ~10 secs.
   " after the minute changed for Vim to update the title bar title.
   " Though I've also tested with the timer only, no redraw, and no
   " autocommands, and I've seen Vim not update the title bar at all
