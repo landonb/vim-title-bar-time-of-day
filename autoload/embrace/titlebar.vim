@@ -50,9 +50,9 @@ function! g:embrace#titlebar#StartTheClock() abort
 endfunction
 
 function! TitleBarTimeOfDayTimer(timer) abort
-  let l:call_redraw = 1
+  let l:clock_check = 1
 
-  call TitleBarTimeOfDayPaint(l:call_redraw)
+  call TitleBarTimeOfDayPaint(l:clock_check)
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
@@ -138,15 +138,15 @@ function! s:TitleBarTimeOfDayTaint() abort
   let s:previous_modified = -1
 endfunction
 
-function! TitleBarTimeOfDayPaint(call_redraw) abort
+function! TitleBarTimeOfDayPaint(clock_check = 0) abort
   let s:clock_datetime = strftime('%Y-%m-%d %H:%M')
 
   " Not that I saw a problem with setting titlestring frequently, but there's
   " no reason to continue if the clock has not changed nor anything of import.
-  " - Note that call_redraw = 1 means the timer called us, in which case only
-  "   maybe the clock changed; but when call_redraw = 0, it means BufEnter or
+  " - Note that clock_check = 1 means the timer called us, in which case only
+  "   maybe the clock changed; but when clock_check = 0, it means BufEnter or
   "   TextChanged*, and we should always update titlestring.
-  if (a:call_redraw == 1) && (s:clock_datetime == s:previous_clock_datetime)
+  if (a:clock_check == 1) && (s:clock_datetime == s:previous_clock_datetime)
 
     return
   endif
@@ -309,24 +309,20 @@ function! g:embrace#titlebar#CreateEventHandlers() abort
   " titlestring shows up immediately). The TextChanged* autocommands also
   " appear to precede a redraw, and drive the '+' modified indicator.
 
-  " [Note: Using s:variables, as autocmd callback can't see l:ocals.]
-  " No need to call redraw, as Vim will do it soon enough.
-  let s:_call_redraw = 0
-
   augroup title_bar_time_of_day_autocommands
     autocmd!
     " Changing buffers affects filename, path, and modified.
-    autocmd BufEnter * call TitleBarTimeOfDayPaint(s:_call_redraw)
+    autocmd BufEnter * call TitleBarTimeOfDayPaint()
     " Reacting to file-saved seems necessary, but empirical evidence
     " suggests this is not necessary. So not necessary, but complete!
-    autocmd BufWritePost * call TitleBarTimeOfDayPaint(s:_call_redraw)
+    autocmd BufWritePost * call TitleBarTimeOfDayPaint()
     " Editing the buffer might change the '+' modified symbol.
     " - Normal mode edits.
-    autocmd TextChanged * call TitleBarTimeOfDayPaint(s:_call_redraw)
+    autocmd TextChanged * call TitleBarTimeOfDayPaint()
     " - Insert mode edits, sans popup.
-    autocmd TextChangedI * call TitleBarTimeOfDayPaint(s:_call_redraw)
+    autocmd TextChangedI * call TitleBarTimeOfDayPaint()
     " - Like TextChangeI but only when the popup menu is visible.
-    autocmd TextChangedP * call TitleBarTimeOfDayPaint(s:_call_redraw)
+    autocmd TextChangedP * call TitleBarTimeOfDayPaint()
     " Just testing this Easter Event I found, out of curiosity.
     " - Oh, haha, it's not implemented, the docs totally tricked me!
     "  autocmd UserGettingBored * echom 'No egg to see here'
