@@ -161,7 +161,7 @@ function! TitleBarTimeOfDayPaint(clock_check = 0) abort
   if getbufinfo(bufnr('%'))[0].changed
     " Modified buffer: show the '+' symbol.
     if s:previous_modified != 1
-      call s:PaintTheClock_Modified()
+      call s:SetTitlestringModified()
     endif
     let s:previous_modified = 1
   else
@@ -170,7 +170,7 @@ function! TitleBarTimeOfDayPaint(clock_check = 0) abort
     " better align the parts title so there's as little a noticeable
     " change as possible it the title when you start editing.
     if s:previous_modified != 0
-      call s:PaintTheClock_Unmodified()
+      call s:SetTitlestringUnmodified()
     endif
     let s:previous_modified = 0
   endif
@@ -184,32 +184,32 @@ endfunction
 
 " MAYBE/2021-02-09: I decided that I like the gtk2 style on macOS, too,
 " so I disabled the macOS variants, but maybe make this style optional.
-" (The PaintTheClock_Modified_Rest/PaintTheClock_Unmodified_Rest fcns.)
+" (The SetTitlestringModified_Rest/SetTitlestringUnmodified_Rest fcns.)
 
-function! s:PaintTheClock_Modified() abort
+function! s:SetTitlestringModified() abort
   " On GNOME 2/MATE, the title bar title also appears in gnome-panel or
   " mate-panel, which is usually also truncated (...), so show the file-
   " name first, and without leading whitespace, for the cleaneast look.
   "
   "  if has("gui_gtk2")
-  "    call s:PaintTheClock_Modified_gtk2(a:clock_day, a:clock_hours)
+  "    call s:SetTitlestringModified_gtk2(a:clock_day, a:clock_hours)
   "  else
-  "    call s:PaintTheClock_Modified_Rest(a:clock_day, a:clock_hours)
+  "    call s:SetTitlestringModified_Rest(a:clock_day, a:clock_hours)
   "  endif
   "
   " On second thought, having the filename first looks good on macOS, too.
-  call s:PaintTheClock_Modified_gtk2()
+  call s:SetTitlestringModified_gtk2()
 endfunction
 
-function! s:PaintTheClock_Unmodified() abort
+function! s:SetTitlestringUnmodified() abort
   "  if has("gui_gtk2")
-  "    call s:PaintTheClock_Unmodified_gtk2(a:clock_day, a:clock_hours)
+  "    call s:SetTitlestringUnmodified_gtk2(a:clock_day, a:clock_hours)
   "  else
-  "    call s:PaintTheClock_Unmodified_Rest(a:clock_day, a:clock_hours)
+  "    call s:SetTitlestringUnmodified_Rest(a:clock_day, a:clock_hours)
   "  endif
   "
   " On second thought, having the filename first looks good on macOS, too.
-  call s:PaintTheClock_Unmodified_gtk2()
+  call s:SetTitlestringUnmodified_gtk2()
 endfunction
 
 " +++
@@ -231,13 +231,13 @@ endfunction
 "   hard code that path in titlestring, which is another reason we need to
 "   manage `redraw` specially, as commented above.)
 
-function! s:PaintTheClock_Modified_gtk2() abort
+function! s:SetTitlestringModified_gtk2() abort
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
   exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
 endfunction
 
-function! s:PaintTheClock_Unmodified_gtk2() abort
+function! s:SetTitlestringUnmodified_gtk2() abort
   " Note: Character before the » is ' ' aka U+2000 En Quad Space.
   " Note: Character before the double quote (") before the expand()
   "       is ' ' aka U+2006 Six-per-Em Space.
@@ -266,11 +266,11 @@ endfunction
 "   - I tried set guioptions+=i, hides the command line clock (does
 "     not matter if command line window `echo` before or after).
 
-function! s:PaintTheClock_Modified_Rest(clock_day, clock_hours) abort
+function! s:SetTitlestringModified_Rest(clock_day, clock_hours) abort
   exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
-function! s:PaintTheClock_Unmodified_Rest(clock_day, clock_hours) abort
+function! s:SetTitlestringUnmodified_Rest(clock_day, clock_hours) abort
   exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
