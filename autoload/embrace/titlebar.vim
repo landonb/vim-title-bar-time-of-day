@@ -136,6 +136,7 @@ endfunction
 function! s:TitleBarTimeOfDayTaint() abort
   let s:previous_clock_datetime = ''
   let s:previous_modified = -1
+  let s:previous_bufnr = -1
 endfunction
 
 function! TitleBarTimeOfDayPaint(clock_check = 0) abort
@@ -153,15 +154,20 @@ function! TitleBarTimeOfDayPaint(clock_check = 0) abort
 
   " +++
 
+  let l:needs_redraw = 0
+
+  let l:bufnr = bufnr('%')
+
   " Set a slightly different titlestring depending on if the '+' modifier
   " is expected to show or not, so that we can get the spacing *exactly*
   " right. Specifically, I don't like it when the different parts of the
   " title -- filename, path, server name, date, and delimiters -- shift
   " around slightly when the buffer modified status changes.
-  if getbufinfo(bufnr('%'))[0].changed
+  if getbufinfo(l:bufnr)[0].changed
     " Modified buffer: show the '+' symbol.
-    if s:previous_modified != 1
+    if s:previous_modified != 1 || s:previous_bufnr != l:bufnr
       call s:SetTitlestringModified()
+      let l:needs_redraw = 1
     endif
     let s:previous_modified = 1
   else
@@ -169,13 +175,16 @@ function! TitleBarTimeOfDayPaint(clock_check = 0) abort
     " adding extra whitespace in the title (around the '+'), and to
     " better align the parts title so there's as little a noticeable
     " change as possible it the title when you start editing.
-    if s:previous_modified != 0
+    if s:previous_modified != 0 || s:previous_bufnr != l:bufnr
       call s:SetTitlestringUnmodified()
+      let l:needs_redraw = 1
     endif
     let s:previous_modified = 0
   endif
 
-  if s:ForceTitleBarTitleRedraw()
+  let s:previous_bufnr = l:bufnr
+
+  if l:needs_redraw && s:ForceTitleBarTitleRedraw()
     let s:previous_clock_datetime = s:clock_datetime
   endif
 endfunction
