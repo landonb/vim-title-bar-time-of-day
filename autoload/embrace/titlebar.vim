@@ -7,14 +7,16 @@
 
 " -------------------------------------------------------------------
 
-" Timer ID, which would never be called except on <F9> plug reload.
-let s:timer = 0
-
 function! s:StopTheClock() abort
-  if ! exists('s:timer') || ! s:timer | return | endif
+  if ! exists('s:timer') || ! s:timer
+
+    return
+  endif
 
   echom "Stopping timer: " . s:timer
+
   call timer_stop(s:timer)
+
   let s:timer = 0
 endfunction
 
