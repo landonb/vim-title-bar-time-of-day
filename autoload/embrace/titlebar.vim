@@ -182,33 +182,24 @@ endfunction
 
 " +++
 
-" MAYBE/2021-02-09: I decided that I like the gtk2 style on macOS, too,
-" so I disabled the macOS variants, but maybe make this style optional.
-" (The SetTitlestringModified_Rest/SetTitlestringUnmodified_Rest fcns.)
+" SAVVY: Generally show the filename first, before the full path,
+" for cases where only a short snippet of the title can be shown.
+" - E.g., the text in GNOME 2/MATE window list icons.
+" - For narrow terminal windows.
+" - Etc.
+
+" Note: MacVim precedes titlestring with a file icon.
+" - I hoped to find a way to control it, but so far have not.
+"   - I tried set noicon, nothing.
+"   - I tried set guioptions-=i, nothing.
+"   - I tried set guioptions+=i, hides the command line clock (does
+"     not matter if command line window `echo` before or after).
 
 function! s:SetTitlestringModified() abort
-  " On GNOME 2/MATE, the title bar title also appears in gnome-panel or
-  " mate-panel, which is usually also truncated (...), so show the file-
-  " name first, and without leading whitespace, for the cleaneast look.
-  "
-  "  if has("gui_gtk2")
-  "    call s:SetTitlestringModified_gtk2(a:clock_day, a:clock_hours)
-  "  else
-  "    call s:SetTitlestringModified_Rest(a:clock_day, a:clock_hours)
-  "  endif
-  "
-  " On second thought, having the filename first looks good on macOS, too.
   call s:SetTitlestringModified_gtk2()
 endfunction
 
 function! s:SetTitlestringUnmodified() abort
-  "  if has("gui_gtk2")
-  "    call s:SetTitlestringUnmodified_gtk2(a:clock_day, a:clock_hours)
-  "  else
-  "    call s:SetTitlestringUnmodified_Rest(a:clock_day, a:clock_hours)
-  "  endif
-  "
-  " On second thought, having the filename first looks good on macOS, too.
   call s:SetTitlestringUnmodified_gtk2()
 endfunction
 
@@ -255,23 +246,6 @@ endfunction
 
 function! g:embrace#titlebar#DateAndTimeString() abort
   return s:clock_datetime
-endfunction
-
-" +++
-
-" Note: MacVim precedes titlestring with a file icon.
-" - I hoped to find a way to control it, but so far have not.
-"   - I tried set noicon, nothing.
-"   - I tried set guioptions-=i, nothing.
-"   - I tried set guioptions+=i, hides the command line clock (does
-"     not matter if command line window `echo` before or after).
-
-function! s:SetTitlestringModified_Rest(clock_day, clock_hours) abort
-  exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ %m\\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
-endfunction
-
-function! s:SetTitlestringUnmodified_Rest(clock_day, clock_hours) abort
-  exec "set title titlestring=\\ \\ \\ " . s:servername . "\\ \\ \\ \\ \\ «\\ \\ \\ \\ %F\\ \\ \\ \\ »\\ \\ \\ \\ %{printf('%s\\ %s',\\ '" . a:clock_day . "',\\ '" . a:clock_hours . "')}"
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
