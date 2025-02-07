@@ -195,16 +195,6 @@ endfunction
 "   - I tried set guioptions+=i, hides the command line clock (does
 "     not matter if command line window `echo` before or after).
 
-function! s:SetTitlestringModified() abort
-  call s:SetTitlestringModified_gtk2()
-endfunction
-
-function! s:SetTitlestringUnmodified() abort
-  call s:SetTitlestringUnmodified_gtk2()
-endfunction
-
-" +++
-
 " See `:h statusline` for % meanings in the `titlestring`.
 "
 " - %F is full path
@@ -222,13 +212,13 @@ endfunction
 "   hard code that path in titlestring, which is another reason we need to
 "   manage `redraw` specially, as commented above.)
 
-function! s:SetTitlestringModified_gtk2() abort
+function! s:SetTitlestringModified() abort
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
   exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
 endfunction
 
-function! s:SetTitlestringUnmodified_gtk2() abort
+function! s:SetTitlestringUnmodified() abort
   " Note: Character before the » is ' ' aka U+2000 En Quad Space.
   " Note: Character before the double quote (") before the expand()
   "       is ' ' aka U+2006 Six-per-Em Space.
