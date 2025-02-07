@@ -63,7 +63,7 @@ function! s:StartTheClock()
   " - The timer delay determines the longest length of time after the clock
   "   time changes that the user might have to wait until the clock updates.
   if !exists('g:TitleBarTimeOfDayRepeatTime')
-    let g:TitleBarTimeOfDayRepeatTime = 101
+    let g:TitleBarTimeOfDayRepeatTime = 3123
   endif
 
   call s:CaptureServernamePostfix()
