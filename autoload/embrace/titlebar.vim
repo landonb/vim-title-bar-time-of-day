@@ -270,7 +270,7 @@ function! s:ForceTitleBarTitleRedraw() abort
   return 1
 endfunction
 
-" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+" -------------------------------------------------------------------
 
 function! g:embrace#titlebar#CreateEventHandlers() abort
   " Vim doesn't update the title bar title when titlestring is set, but
@@ -300,5 +300,12 @@ function! g:embrace#titlebar#CreateEventHandlers() abort
     " - Oh, haha, it's not implemented, the docs totally tricked me!
     "  autocmd UserGettingBored * echom 'No egg to see here'
   augroup END
+endfunction
+
+" -------------------------------------------------------------------
+
+function! g:embrace#titlebar#Setup() abort
+  call g:embrace#titlebar#CreateEventHandlers()
+  call g:embrace#titlebar#StartTheClock()
 endfunction
 

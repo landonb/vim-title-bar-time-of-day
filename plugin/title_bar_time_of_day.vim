@@ -33,7 +33,5 @@ let g:loaded_plugin_title_bar_time_of_day = 1
 
 " -------------------------------------------------------------------
 
-call g:embrace#titlebar#CreateEventHandlers()
-
-call g:embrace#titlebar#StartTheClock()
+call g:embrace#titlebar#Setup()
 
