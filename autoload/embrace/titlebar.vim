@@ -44,6 +44,8 @@ function! g:embrace#titlebar#StartTheClock() abort
 
   call s:TitleBarTimeOfDayTaint()
 
+  call s:PrepareWindowNumberPrefix()
+
   call s:CaptureServernamePostfix()
 
   let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
@@ -112,6 +114,46 @@ function! s:CaptureServernamePostfix() abort
     let s:servername = fnamemodify(v:servername, ":t")
     let s:servername = substitute(s:servername, '[0-9.]\+$', '', '')
   endif
+endfunction
+
+" ***
+
+" REFER: sh-humble-prompt adds window number prefix to terminal window
+" title via PS1 — and Hammerspoon accelerators (and GNOME accelerators)
+" use window number prefix to find-and-front specific terminals.
+" - E.g., author uses <Cmd-1> to front terminal window with "1." prefix,
+"   <Cmd-2> to front terminal windown with "2." prefix, etc.
+"   https://github.com/DepoXy/sh-humble-prompt#🙇
+"   https://github.com/DepoXy/macOS-Hammyspoony#🥄
+" - The window number is sussed from an environ named ITERM_SESSION_ID,
+"   which honors the environment wherein the author first saw this
+"   feature (though the feature itself has nothing to do with iTerm).
+"   - The value starts with a 'w' followed by a 0-based window number.
+"     This is followed by the tab id, not sure that 'p' is for, and
+"     then a GUID, none of which we care about.
+"   - E.g., w1t0p0:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+" - By including the window number prefix in the (n)vim title, if the
+"   user uses (n)vim as their EDITOR, then when (n)vim is running, e.g.,
+"   during a `git commit -v`, the OS accelerators will still be able to
+"   find that terminal window.
+
+function! s:PrepareWindowNumberPrefix() abort
+  let s:winnum_prefix = ''
+
+  if $ITERM_SESSION_ID == ''
+
+    return
+  endif
+
+  " Don't include window number prefix in GUI window title string.
+  if has('gui_running')
+
+    return
+  endif
+
+  let l:winnum = substitute($ITERM_SESSION_ID, '^w\([0-9]\+\).*', '\1', '')
+
+  let s:winnum_prefix = string(str2nr(l:winnum) + 1) .. '.\ '
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
@@ -235,7 +277,7 @@ endfunction
 function! s:SetTitlestringModified() abort
   " Rather than use titlestring's/statusline's %F, make path specially to be
   " more like default titlestring title (which collapses to ~/ when possible).
-  exec "set title titlestring=%t\\ \\ \\ \\ %m\\ \\ \\ %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
+  exec "set title titlestring=" .. s:winnum_prefix .. "%t\\ \\ \\ \\ %m\\ \\ \\ %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
 endfunction
 
 function! s:SetTitlestringUnmodified() abort
@@ -245,7 +287,7 @@ function! s:SetTitlestringUnmodified() abort
   " - Both of these spaces make it so none of the title shifts when
   "   it changes from modified to not, or vice versa! At least in my
   "   Mint MATE 19.3 window manager environment, it looks perfect!
-  exec "set title titlestring=%t\\ \\ \\  »\\ \\ \\ \\ \\  %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
+  exec "set title titlestring=" .. s:winnum_prefix .. "%t\\ \\ \\  »\\ \\ \\ \\ \\  %{g:embrace#titlebar#TildePrefixedPath()}\\ \\ \\ \\ «\\ \\ " . s:servername . "\\ \\ »\\ \\ \\ \\ %{g:embrace#titlebar#DateAndTimeString()}"
 endfunction
 
 " +++
