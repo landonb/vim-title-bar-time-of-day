@@ -52,9 +52,9 @@ function! g:embrace#titlebar#StartTheClock() abort
 endfunction
 
 function! TitleBarTimeOfDayTimer(timer) abort
-  let l:clock_check = 1
+  let l:timer_callback = 1
 
-  call TitleBarTimeOfDayPaint(l:clock_check)
+  call TitleBarTimeOfDayPaint(l:timer_callback)
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
@@ -192,15 +192,15 @@ function! s:TitleBarTimeOfDayTaint() abort
   let s:previous_bufnr = -1
 endfunction
 
-function! TitleBarTimeOfDayPaint(clock_check = 0) abort
+function! TitleBarTimeOfDayPaint(timer_callback = 0) abort
   let s:clock_datetime = strftime('%Y-%m-%d %H:%M')
 
   " Not that I saw a problem with setting titlestring frequently, but there's
   " no reason to continue if the clock has not changed nor anything of import.
-  " - Note that clock_check = 1 means the timer called us, in which case only
-  "   maybe the clock changed; but when clock_check = 0, it means BufEnter or
+  " - Note that timer_callback = 1 means the timer called us, in which case only
+  "   maybe the clock changed; but when timer_callback = 0, it means BufEnter or
   "   TextChanged*, and we should always update titlestring.
-  if (a:clock_check == 1) && (s:clock_datetime == s:previous_clock_datetime)
+  if (a:timer_callback == 1) && (s:clock_datetime == s:previous_clock_datetime)
 
     return
   endif
