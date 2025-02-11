@@ -39,7 +39,7 @@ function! g:embrace#titlebar#StartTheClock() abort
   " - The timer delay determines the longest length of time after the clock
   "   time changes that the user might have to wait until the clock updates.
   if !exists('g:TitleBarTimeOfDayRepeatTime')
-    let g:TitleBarTimeOfDayRepeatTime = 3123
+    let g:TitleBarTimeOfDayRepeatTime = 2500
   endif
 
   call s:TitleBarTimeOfDayTaint()
