@@ -195,19 +195,26 @@ endfunction
 function! TitleBarTimeOfDayPaint(timer_callback = 0) abort
   let s:clock_datetime = strftime('%Y-%m-%d %H:%M')
 
+  let l:update_title = 0
+
   " Not that I saw a problem with setting titlestring frequently, but there's
   " no reason to continue if the clock has not changed nor anything of import.
   " - Note that timer_callback = 1 means the timer called us, in which case only
   "   maybe the clock changed; but when timer_callback = 0, it means BufEnter or
   "   TextChanged*, and we should always update titlestring.
-  if (a:timer_callback == 1) && (s:clock_datetime == s:previous_clock_datetime)
+  if a:timer_callback == 1
+    if s:clock_datetime == s:previous_clock_datetime
 
-    return
+      return
+    endif
+
+    " Note we don't call `redraw` — that does not trigger (n)vim to
+    " regenerate titlestring '%{foo()}' callbacks. Instead, set the
+    " &titlestring again to update the clock time.
+    let l:update_title = 1
   endif
 
   " +++
-
-  let l:needs_redraw = 0
 
   let l:bufnr = bufnr('%')
 
@@ -218,9 +225,10 @@ function! TitleBarTimeOfDayPaint(timer_callback = 0) abort
   " around slightly when the buffer modified status changes.
   if getbufinfo(l:bufnr)[0].changed
     " Modified buffer: show the '+' symbol.
-    if s:previous_modified != 1 || s:previous_bufnr != l:bufnr
+    if l:update_title || s:previous_modified != 1 || s:previous_bufnr != l:bufnr
       call s:SetTitlestringModified()
-      let l:needs_redraw = 1
+
+      let l:update_title = 1
     endif
     let s:previous_modified = 1
   else
@@ -228,16 +236,19 @@ function! TitleBarTimeOfDayPaint(timer_callback = 0) abort
     " adding extra whitespace in the title (around the '+'), and to
     " better align the parts title so there's as little a noticeable
     " change as possible it the title when you start editing.
-    if s:previous_modified != 0 || s:previous_bufnr != l:bufnr
+    if l:update_title || s:previous_modified != 0 || s:previous_bufnr != l:bufnr
       call s:SetTitlestringUnmodified()
-      let l:needs_redraw = 1
+
+      let l:update_title = 1
     endif
     let s:previous_modified = 0
   endif
 
   let s:previous_bufnr = l:bufnr
 
-  if l:needs_redraw && s:ForceTitleBarTitleRedraw()
+  if l:update_title && s:CheckMode()
+    redraw
+
     let s:previous_clock_datetime = s:clock_datetime
   endif
 endfunction
@@ -302,28 +313,31 @@ endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
-function! s:ForceTitleBarTitleRedraw() abort
-  " Don't redraw in certain modes. E.g., if you run `:messages`, which
-  " is 'r' mode, `redraw` will dismiss the output. Note that when
-  " :messages is open, the title bar will still eventually update,
-  " even if we're not calling `redraw` here. (lb): I tested and ran
-  " `:messages` and left its prompt unanswered, and it took ~10 secs.
-  " after the minute changed for Vim to update the title bar title.
-  " Though I've also tested with the timer only, no redraw, and no
-  " autocommands, and I've seen Vim not update the title bar at all
-  " until the user interacts with Vim. In any case, be picky about
-  " modes we'll redraw from.
+" GUARD: Check mode().
+"
+" Only update title in Normal and Insert mode.
+"
+" Don't redraw in certain modes. E.g., if you run `:messages`, which
+" is 'r' mode, `redraw` will dismiss the output. Note that when
+" :messages is open, the title bar will still eventually update,
+" even if we're not calling `redraw` here. (lb): I tested and ran
+" `:messages` and left its prompt unanswered, and it took ~10 secs.
+" after the minute changed for Vim to update the title bar title.
+" Though I've also tested with the timer only, no redraw, and no
+" autocommands, and I've seen Vim not update the title bar at all
+" until the user interacts with Vim. In any case, be picky about
+" modes we'll redraw from.
+
+function! s:CheckMode() abort
   if mode() !=# 'n' && mode() !=# 'i' && mode() !=# 's'
 
     return 0
   endif
 
-  redraw
-
   return 1
 endfunction
 
-" -------------------------------------------------------------------
+" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
 
 function! g:embrace#titlebar#CreateEventHandlers() abort
   " Vim doesn't update the title bar title when titlestring is set, but
