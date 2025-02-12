@@ -1,102 +1,112 @@
 # vim-title-bar-time-of-day 🕰️
 
-An answer to the age-old question after hiding the macOS menu bar,
+An answer to the age-old question after hiding all desktop menu bars,
+docks, and panels,
 
 [*Quelle heure est il?*](https://www.google.com/search?q=Quelle+heure+est+il)
 
 ## Introduction
 
-This plugin shows the date and time of day in the Vim titlebar.
+This plugin shows the date and time in the Vim titlebar.
 
-The author finds this useful on macOS, because I like to hide the
-macOS menu bar, which is normally where you'd see the clock.
+The author finds this useful on macOS and GNOME Shell, because I like
+to hide the menu bar, which is normally where you'd see the clock.
 
-### Requirements
+## Features
 
-This plug-in requires Vim v8.0 or greater, to take advantage of timers.
+This plugin generates a fairly standard title, albeit with a few
+extra features.
 
-## Usage
+- If `ITERM_SESSION_ID` is defined, the window ID [0-9] is printed
+  first, followed by a dot and a space (e.g., "1. ").
 
-Nothing. If this plugin is loaded, it'll show a clock in the titlebar.
+  - This enables you to add OS accelerators to find-and-front terminal
+    windows using their window number, even when running (n)vim in the
+    shell (e.g., you might use `<Cmd-1>` to front the window with the
+    "1. " prefix, `<Cmd-2>` to front the "2. " window, etc.).
 
-For example, here's the titlebar of Vim running on Linux Mint MATE.
-You'll see the clock printed on the right. To the left of the clock
-are three other details: First, the filename; next, the file path;
-and third, the ``--servername``:
+- The file name follows next.
+
+  - You'll usually see the base name before other values,
+    in case the window is narrow and that's all you can see.
+
+- The modification indicator comes after.
+
+- Then the full path.
+
+- Next the server or socket name.
+
+- And finally the date and time.
+
+For example, here's a screenshot of the Vim titlebar running on Linux Mint MATE:
 
 ![vim-title-bar-time-of-day example](doc/assets/vim-title-bar-time-of-day-MATE-desktop.png "vim-title-bar-time-of-day example")
 
-## Options
+## Configuration
 
-To set an option, include a line like the following in your `~/.vimrc`:
+[lazy.nvim]: https://github.com/folke/lazy.nvim
+[vim-plug]: https://github.com/junegunn/vim-plug
 
-  ```
-  let g:TitleBarTimeOfDayDisabled = 1
-  ```
+This plugin is inactive by default.
 
-The following options are available:
+Call its `Setup({opts})` function to load and unload it.
 
-- `g:TitleBarTimeOfDayDisabled` — Boolean value; either 0 or 1 (default: 0)
+E.g., here's how you might install and configure the plugin
+from Lua using [`lazy.nvim`][lazy.nvim]:
 
-  Set this variable truthy to disable the plugin.
+    ```
+    {
+      "landonb/vim-title-bar-time-of-day",
 
-- `g:TitleBarTimeOfDayRepeatTime` — Non-negative integer value (default: 101).
+      config = function()
+        -- These are the default values if you
+        -- don't specify them.
 
-  Determines how often to run the timer that updates the clock (in milliseconds).
+        vim.fn['embrace#titlebar#Setup']({
+          titlebar_enable = 1,
+          clock_rate = 2500,
+        })
+      end,
+    },
+    ```
 
-## See Also
+Or from your ``.vimrc``:
 
-If you'd like to show a clock in the Vim command window, see a similar plugin:
-[vim-command-line-clock](https://www.github.com/embrace-vim/vim-command-line-clock)
+    ```
+    " These are the default values if you
+    " don't specify them.
+    call g:embrace#titlebar#Setup({
+      \ 'titlebar_enable': 1,
+      \ 'clock_rate': 2500,
+      \ })
+    ```
+
+Some notes:
+
+- When `titlebar_enable` is truthy, the `clock_rate` controls how often the
+  background timer runs. The background timer is used to update the titlebar
+  clock, so that if you're not using (Neo)Vim, the clock still updates
+  (otherwise the plugin only refreshes the titlebar when you interact with a
+  buffer). If you set a longer clock rate, the title bar clock may not
+  update for that many milliseconds after the minute changes.
+
+### Requirements
+
+This plug-in requires Vim v8.0 or greater, or Neovim, for `timer`
+support.
 
 ## Installation
 
-Installation is easy using the packages feature (see ``:help packages``).
+Install this plugin like you would any Neovim or Vim plugin —
+probably using [`lazy.nvim`][lazy.nvim] or [`vim-plug`][vim-plug].
 
-If you want the plugin to load automatically on Vim startup,
-use a ``start/`` directory, e.g.,
+## See Also
 
-  ```shell
-  mkdir -p ~/.vim/pack/landonb/start
-  ```
+If you'd like to show a clock in the status line, see another plugin I publish:
+[dubs_mescaline](https://github.com/landonb/dubs_mescaline) 🍄
 
-And then clone the project to that path:
-
-  ```shell
-  cd ~/.vim/pack/landonb/start
-  git clone https://github.com/landonb/vim-title-bar-time-of-day.git
-  ```
-
-If you want to test the package first, make it optional instead
-(see ``:help pack-add``):
-
-  ```shell
-  mkdir -p ~/.vim/pack/landonb/opt
-  cd ~/.vim/pack/landonb/opt
-  git clone https://github.com/landonb/vim-title-bar-time-of-day.git
-
-  " When ready, load the [opt]ional plugin (or is it [opt]-in?).
-  :packadd! vim-title-bar-time-of-day
-  ```
-
-To build the help, ensure the plugin is loaded, and then
-run the following command just one time from within Vim:
-
-  ```shell
-  :Helptags
-  ```
-
-Or, you can build the help from the terminal instead. Run:
-
-  ```shell
-  vim -u NONE -c "helptags vim-title-bar-time-of-day/doc" -c q
-  ```
-
-And then to view the help from within Vim, run:
-
-  ```shell
-  :help vim-title-bar-time-of-day
-  ```
-
-Enjoy!
+If you'd like to add OS accelerators to find-and-front windows using their
+terminal window numbers, check out [Hammerspoon](https://www.hammerspoon.org/)
+for macOS, or [`window-calls`](https://github.com/ickyicky/window-calls) for
+GNOME Shell.
 
