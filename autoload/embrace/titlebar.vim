@@ -13,7 +13,7 @@ function! g:embrace#titlebar#StopTheClock() abort
     return
   endif
 
-  echom "Stopping timer: " . s:timer
+  echom "vim-title-bar-time-of-day: Stop timer: " . s:timer
 
   call timer_stop(s:timer)
 
