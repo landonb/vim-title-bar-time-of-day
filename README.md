@@ -1,4 +1,4 @@
-# vim-title-bar-time-of-day
+# vim-title-bar-time-of-day 🕰️
 
 An answer to the age-old question after hiding the macOS menu bar,
 
