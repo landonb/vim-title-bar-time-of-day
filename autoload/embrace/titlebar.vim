@@ -37,6 +37,10 @@ function! g:embrace#titlebar#StartTheClock() abort
   call s:CaptureServernamePostfix()
 
   let s:timer = timer_start(s:clock_rate, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
+
+  " Kick one off immediately so user doesn't have to wait
+  " s:clock_rate to see title change.
+  call timer_start(0, 'TitleBarTimeOfDayTimer')
 endfunction
 
 function! TitleBarTimeOfDayTimer(timer) abort
