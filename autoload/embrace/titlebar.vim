@@ -35,20 +35,13 @@ function! g:embrace#titlebar#StartTheClock() abort
   "
   "  set title
 
-  " Timer repeat time, configurable via g:TitleBarTimeOfDayRepeatTime.
-  " - The timer delay determines the longest length of time after the clock
-  "   time changes that the user might have to wait until the clock updates.
-  if !exists('g:TitleBarTimeOfDayRepeatTime')
-    let g:TitleBarTimeOfDayRepeatTime = 2500
-  endif
-
   call s:TitleBarTimeOfDayTaint()
 
   call s:PrepareWindowNumberPrefix()
 
   call s:CaptureServernamePostfix()
 
-  let s:timer = timer_start(g:TitleBarTimeOfDayRepeatTime, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
+  let s:timer = timer_start(s:clock_rate, 'TitleBarTimeOfDayTimer', { 'repeat': -1 })
 endfunction
 
 function! TitleBarTimeOfDayTimer(timer) abort
@@ -371,7 +364,19 @@ endfunction
 
 " -------------------------------------------------------------------
 
-function! g:embrace#titlebar#Setup() abort
+" The timer runs every s:clock_rate msecs.
+" - The clock rate determines the longest length of time after the clock
+"   time changes that the user might have to wait until the clock updates.
+
+function! s:SetupOpts(opts = {}) abort
+  let s:clock_rate = get(a:opts, 'clock_rate', 2500)
+endfunction
+
+" USAGE: Defaults:
+"   call g:embrace#titlebar#Setup({'clock_rate': 2500})
+function! g:embrace#titlebar#Setup(opts = {}) abort
+  call s:SetupOpts(a:opts)
+
   call g:embrace#titlebar#CreateEventHandlers()
   call g:embrace#titlebar#StartTheClock()
 endfunction
