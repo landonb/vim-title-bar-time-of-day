@@ -23,12 +23,6 @@ endfunction
 function! g:embrace#titlebar#StartTheClock() abort
   call g:embrace#titlebar#StopTheClock()
 
-  " Guard clause: Users opt-out by setting g:TitleBarTimeOfDayDisabled truthy.
-  if exists('g:TitleBarTimeOfDayDisabled') && g:TitleBarTimeOfDayDisabled
-
-    return
-  endif
-
   " Implicit enable in Vim on `set titlestring=`, but must be explicitly
   " enabled in Neovim.
   " - Can also be set inline with titlestring; see below.
@@ -364,18 +358,36 @@ endfunction
 
 " -------------------------------------------------------------------
 
+function! g:embrace#titlebar#Teardown() abort
+  call g:embrace#titlebar#StopTheClock()
+
+  autocmd! title_bar_time_of_day_autocommands
+
+  set titlestring=
+endfunction
+
+" -------------------------------------------------------------------
+
 " The timer runs every s:clock_rate msecs.
 " - The clock rate determines the longest length of time after the clock
 "   time changes that the user might have to wait until the clock updates.
 
 function! s:SetupOpts(opts = {}) abort
+  let s:titlebar_enable = get(a:opts, 'titlebar_enable', 1)
+
   let s:clock_rate = get(a:opts, 'clock_rate', 2500)
 endfunction
 
 " USAGE: Defaults:
-"   call g:embrace#titlebar#Setup({'clock_rate': 2500})
+"   call g:embrace#titlebar#Setup({'titlebar_enable': 1, 'clock_rate': 2500})
 function! g:embrace#titlebar#Setup(opts = {}) abort
   call s:SetupOpts(a:opts)
+
+  if !s:titlebar_enable
+    call g:embrace#titlebar#Teardown()
+
+    return
+  endif
 
   call g:embrace#titlebar#CreateEventHandlers()
   call g:embrace#titlebar#StartTheClock()
