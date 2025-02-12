@@ -24,7 +24,8 @@ function! g:embrace#titlebar#StartTheClock() abort
   call g:embrace#titlebar#StopTheClock()
 
   " Implicit enable in Vim on `set titlestring=`, but must be explicitly
-  " enabled in Neovim.
+  " enabled in Neovim. (Note &title enabled by default in Neovim, but
+  " setting `titlestring` won't enable `title` if user disabled it.)
   " - Can also be set inline with titlestring; see below.
   "
   "  set title
