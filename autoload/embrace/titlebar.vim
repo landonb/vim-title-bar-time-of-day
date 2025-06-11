@@ -45,8 +45,22 @@ endfunction
 
 function! TitleBarTimeOfDayTimer(timer) abort
   let l:timer_callback = 1
+  let l:update_title = 0
 
-  call TitleBarTimeOfDayPaint(l:timer_callback)
+  " In Vim (or at least MacVim), v:servername is not immediately
+  " available when the app is started.
+  " - Defaults to "VIM" if --servername not specified on the cmdline.
+  if s:servername == ""
+    call s:CaptureServernamePostfix()
+
+    if s:servername != ""
+      " Force a repaint.
+      let l:timer_callback = 0
+      let l:update_title = 1
+    endif
+  endif
+
+  call TitleBarTimeOfDayPaint(l:timer_callback, l:update_title)
 endfunction
 
 " +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
@@ -184,10 +198,10 @@ function! s:TitleBarTimeOfDayTaint() abort
   let s:previous_bufnr = -1
 endfunction
 
-function! TitleBarTimeOfDayPaint(timer_callback = 0) abort
+function! TitleBarTimeOfDayPaint(timer_callback = 0, update_title = 0) abort
   let s:clock_datetime = strftime('%Y-%m-%d %H:%M')
 
-  let l:update_title = 0
+  let l:update_title = a:update_title
 
   " Not that I saw a problem with setting titlestring frequently, but there's
   " no reason to continue if the clock has not changed nor anything of import.
